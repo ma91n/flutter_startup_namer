@@ -9,11 +9,12 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Startup Name Generator',
+      title: 'Startup Name Generator',
         theme: ThemeData(
           primaryColor: Colors.white,
         ),
-        home: RandomWords());
+      home: RandomWords()
+    );
   }
 }
 
@@ -45,7 +46,7 @@ class _RandomWordsState extends State<RandomWords> {
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
           final tiles = _saved.map(
-            (WordPair pair) {
+                (WordPair pair) {
               return ListTile(
                 title: Text(
                   pair.asPascalCase,
@@ -74,12 +75,17 @@ class _RandomWordsState extends State<RandomWords> {
         padding: EdgeInsets.all(16.0),
         itemCount: 100,
         separatorBuilder: (context, index) => Divider(
-              height: 0,
-            ),
+          height: 0,
+        ),
         itemBuilder: (context, i) {
-          final index = i ~/ 2;
+
+          // if (i.isOdd) return Divider();
+
+          // final index = i ~/ 2;
+          final index = i;
+
           if (index >= _suggestions.length) {
-            _suggestions.addAll(generateWordPairs().take(10)); /*4*/
+            _suggestions.addAll(generateWordPairs().take(10));
           }
 
           final item = _suggestions[index];
@@ -97,12 +103,14 @@ class _RandomWordsState extends State<RandomWords> {
               });
               // スワイプ方向がendToStart（画面左から右）の場合の処理
               if (direction == DismissDirection.endToStart) {
-                Scaffold.of(context)
-                    .showSnackBar(SnackBar(content: Text("削除しました")));
+                Scaffold.of(context).showSnackBar(
+                    SnackBar(content: Text("削除しました"))
+                );
                 // スワイプ方向がstartToEnd（画面右から左）の場合の処理
               } else {
-                Scaffold.of(context)
-                    .showSnackBar(SnackBar(content: Text("登録しました")));
+                Scaffold.of(context).showSnackBar(
+                    SnackBar(content: Text("登録しました"))
+                );
               }
             },
             // スワイプ方向がendToStart（画面左から右）の場合のバックグラウンドの設定
@@ -114,6 +122,7 @@ class _RandomWordsState extends State<RandomWords> {
             // ListViewの各要素の定義
             child: _buildRow(_suggestions[index]),
           );
+
         });
   }
 
