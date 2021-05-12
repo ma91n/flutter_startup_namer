@@ -2,20 +2,18 @@ import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(App());
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
-        theme: ThemeData(          // Add the 3 lines from here...
+        title: 'Startup Name Generator',
+        theme: ThemeData(
           primaryColor: Colors.white,
-        ),                         // ... to here.
-      home: RandomWords()
-    );
+        ),
+        home: RandomWords());
   }
 }
 
@@ -26,7 +24,7 @@ class RandomWords extends StatefulWidget {
 
 class _RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
-  final _saved = <WordPair>{};     // NEW
+  final _saved = <WordPair>{};
   final _biggerFont = TextStyle(fontSize: 18.0);
 
   @override
@@ -45,10 +43,9 @@ class _RandomWordsState extends State<RandomWords> {
   void _pushSaved() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        // NEW lines from here...
         builder: (BuildContext context) {
           final tiles = _saved.map(
-                (WordPair pair) {
+            (WordPair pair) {
               return ListTile(
                 title: Text(
                   pair.asPascalCase,
@@ -67,39 +64,72 @@ class _RandomWordsState extends State<RandomWords> {
             ),
             body: ListView(children: divided),
           );
-        }, // ...to here.
+        },
       ),
     );
   }
 
   Widget _buildSuggestions() {
-    return ListView.builder(
+    return ListView.separated(
         padding: EdgeInsets.all(16.0),
-        itemBuilder: /*1*/ (context, i) {
-          if (i.isOdd) return Divider();
-          /*2*/
-
-          final index = i ~/ 2; /*3*/
+        itemCount: 100,
+        separatorBuilder: (context, index) => Divider(
+              height: 0,
+            ),
+        itemBuilder: (context, i) {
+          final index = i ~/ 2;
           if (index >= _suggestions.length) {
             _suggestions.addAll(generateWordPairs().take(10)); /*4*/
           }
-          return _buildRow(_suggestions[index]);
+
+          final item = _suggestions[index];
+
+          return Dismissible(
+            // // KeyはFlutterが要素を一意に特定できるようにするための値を設定する。
+            key: Key(item.asCamelCase),
+
+            // onDismissedの中にスワイプされた時の動作を記述する。
+            // directionにはスワイプの方向が入るため、方向によって処理を分けることができる。
+            onDismissed: (direction) {
+              setState(() {
+                // スワイプされた要素をデータから削除する
+                _suggestions.removeAt(index);
+              });
+              // スワイプ方向がendToStart（画面左から右）の場合の処理
+              if (direction == DismissDirection.endToStart) {
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text("削除しました")));
+                // スワイプ方向がstartToEnd（画面右から左）の場合の処理
+              } else {
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text("登録しました")));
+              }
+            },
+            // スワイプ方向がendToStart（画面左から右）の場合のバックグラウンドの設定
+            background: Container(color: Colors.red),
+
+            // スワイプ方向がstartToEnd（画面右から左）の場合のバックグラウンドの設定
+            secondaryBackground: Container(color: Colors.blue),
+
+            // ListViewの各要素の定義
+            child: _buildRow(_suggestions[index]),
+          );
         });
   }
 
   Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);  // NEW
+    final alreadySaved = _saved.contains(pair);
 
     return ListTile(
       title: Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
-      trailing: Icon(   // NEW from here...
+      trailing: Icon(
         alreadySaved ? Icons.favorite : Icons.favorite_border,
         color: alreadySaved ? Colors.red : null,
       ),
-      onTap: () {      // NEW lines from here...
+      onTap: () {
         setState(() {
           if (alreadySaved) {
             _saved.remove(pair);
